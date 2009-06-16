@@ -39,6 +39,7 @@ runLFA lfa s as = case as of
                runLFA lfa s' as
 
 -- product (recognizes the intersection of the languages)
+
 prodDFA :: (Ord a) => DFA a s1 -> DFA a s2 -> DFA a (s1, s2)
 prodDFA d1 d2 = prod trans $ M.keys d1 -- d2 would have been fine as well
   where
@@ -74,49 +75,56 @@ prod t (k:ks) = case t k of
   Nothing -> prod t ks
   Just q  -> M.singleton k q `M.union` prod t ks
 
-bissimilarity
+--bissimilarity
+
+(|>) :: (Ord a) => M.Map a f -> a -> f 
+
 aut |> a = fromJust (M.lookup a aut)
 
-bisimilarDFA :: (Eq s) => DFA a s -> s -> s -> Bool
+bisimilarDFA :: (Ord a,Eq s) => DFA a s -> s -> s -> Bool
 bisimilarDFA d p q = bisimilarDFA' d p q []
 
 bisimilarDFA' d p q visited 
      | (p,q) `elem` visited = True
      | (q,p) `elem` visited = True
      | otherwise = let al = M.keys d
-                   in all[bisimilarDFA' d p' q' ((p,q):visited) | a <- al sp'<- (d |> a) p, q' <- (d |> a) q]
+                   in and [bisimilarDFA' d ((d|>a) p) ((d|>a) q) ((p,q):visited) | a <- al]
 --wrong
 
 --problem here : need to check if already visited to stop recursion.
 --dont know if there is a better way.
                         
 
-bisimilarNFA :: (Ord s) => NFA a s -> s -> s -> Bool
+bisimilarNFA :: (Ord a, Ord s) => NFA a s -> s -> s -> Bool
 bisimilarNFA d p q = bisimilarNFA' d p q []
 
 bisimilarNFA' d p q visited
     | (p,q) `elem` visited = True
     | (q,p) `elem` visited = True
     | otherwise  = let al = M.keys d
-                       ps = (d |> d) p
-                       qs = (d |> d) q 
-                   in all (\p'->any (\q'->bisimilarNFA' d p' q' ((p,q):visited)) qs) ps 
-                      &&
-                      all (\q'->any (\p'->bisimilarNFA' d p' q' ((p,q):visited)) ps) qs
-
-bisimilarLFA :: (Eq s) => LFA a s -> s -> s -> Bool
-bisimilarLFA d p q = bisimilarLFA' d p q []
-
-bisimilarLFA' d p q visited 
-    | (p,q) `elem` visited = True
-    | (q,p) `elem` visited = True
-    | otherwise  = let al = M.keys d
-                       ps = d |> d p
-                       qs = d |> d q 
-                   in setall (\p'->setany (\q'->bisimilarNFA' d p' q' ((p,q):visited)) qs) ps 
-                      &&
-                      setall (\q'->setany (\p'->bisimilarNFA' d p' q' ((p,q):visited)) ps) qs
+                   in  and (map check al)
+    where check a = let ps = (d |> a) p
+                        qs = (d |> a) q 
+                    in setall (\p'->setany (\q'-> bisimilarNFA' d p' q' ((p,q):visited)) qs) ps 
+                       &&
+                       setall (\q'->setany (\p'-> bisimilarNFA' d p' q' ((p,q):visited)) ps) qs
 
 
 setall p = S.fold (&&) True  . S.map p
 setany p = S.fold (||) False . S.map p
+
+bisimilarLFA :: (Ord a , Eq s) => LFA a s -> s -> s -> Bool
+bisimilarLFA d p q = bisimilarLFA' d p q []
+
+bisimilarLFA' :: (Ord a, Eq s) => LFA a s -> s -> s -> [(s,s)] -> Bool
+bisimilarLFA' d p q visited 
+    | (p,q) `elem` visited = True
+    | (q,p) `elem` visited = True
+    | otherwise  = let al = M.keys d
+                   in  and (map check al)
+    where check a = let ps = (d |> a) p
+                        qs = (d |> a) q 
+                    in all (\p'->any (\q'-> bisimilarLFA' d p' q' ((p,q):visited)) qs) ps 
+                       &&
+                       all (\q'->any (\p'-> bisimilarLFA' d p' q' ((p,q):visited)) ps) qs
+
