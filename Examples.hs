@@ -1,5 +1,6 @@
 module Examples where
 import Data.Set
+import qualified Data.Map as M
 
 type DFA a s = M.Map a (s -> s    ) -- deterministic
 type NFA a s = M.Map a (s -> Set s) -- non deterministic
