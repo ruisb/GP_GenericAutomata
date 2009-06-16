@@ -38,17 +38,43 @@ runLFA lfa s as = case as of
     Just q  -> q s >>= \s' ->
                runLFA lfa s' as
 
--- product
-prodDFA :: DFA a s1 -> DFA a s2 -> DFA a (s1,s2)
-prodDFA = undefined
+-- product (recognizes the intersection of the languages)
+prodDFA :: (Ord a) => DFA a s1 -> DFA a s2 -> DFA a (s1, s2)
+prodDFA d1 d2 = prod trans $ M.keys d1 -- d2 would have been fine as well
+  where
+    trans k = M.lookup k d1 >>= \q1 ->
+              M.lookup k d2 >>= \q2 ->
+              return $ newQ q1 q2
+    newQ q1 q2 = \(s1,s2) -> (q1 s1, q2 s2)
 
-prodNFA :: NFA a s1 -> NFA a s2 -> NFA a (s1,s2)
-prodNFA = undefined
+prodNFA :: (Ord a, Ord s1, Ord s2) => NFA a s1 -> NFA a s2 -> NFA a (s1,s2)
+prodNFA n1 n2 = prod trans $ M.keys n1
+  where
+    trans k = M.lookup k n1 >>= \q1 ->
+              M.lookup k n2 >>= \q2 ->
+              return $ \(s1, s2) -> S.fromList $ (newQ q1 q2) (s1, s2)
+    newQ q1 q2 = \(s1, s2) ->
+                 S.toList (q1 s1) >>= \s1' ->
+                 S.toList (q2 s2) >>= \s2' ->
+                 return (s1', s2')
 
-prodLFA :: LFA a s1 -> LFA a s2 -> LFA a (s1,s2)
-prodLFA = undefined
+prodLFA :: (Ord a) => LFA a s1 -> LFA a s2 -> LFA a (s1,s2)
+prodLFA d1 d2 = prod trans $ M.keys d1
+  where
+    trans k = M.lookup k d1 >>= \q1 ->
+              M.lookup k d2 >>= \q2 ->
+              return $ newQ q1 q2
+    newQ q1 q2 = \(s1, s2) ->
+                 q1 s1 >>= \s1' ->
+                 q2 s2 >>= \s2' ->
+                 return (s1', s2')
 
---bissimilarity
+prod t []     = M.empty
+prod t (k:ks) = case t k of
+  Nothing -> prod t ks
+  Just q  -> M.singleton k q `M.union` prod t ks
+
+bissimilarity
 aut |> a = fromJust (M.lookup a aut)
 
 bisimilarDFA :: (Eq s) => DFA a s -> s -> s -> Bool
