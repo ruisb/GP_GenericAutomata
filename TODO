@@ -1,0 +1,16 @@
+AIMS
+> generic transition systems seen as a function
+  S -> F S
+  where S is the set of states.
+  (for each action/letter)
+
+> generic alphabet, not necessarily sequentially --> tree automata
+
+TASKS
+
+> Simple examples for motivating the first task
+  * deterministic automata (F = Id)
+  * non deterministic automata (F = finitePowerset or F = List) 
+
+
+
