@@ -1,9 +1,9 @@
 module Examples where
 import Data.Set
 
-type DFA a s = s -> a -> s     -- deterministic
-type NFA a s = s -> a -> Set s -- non deterministic
-type LFA a s = s -> a -> [s]   -- ordered non deterministic
+type DFA a s = M.Map a (s -> s    ) -- deterministic
+type NFA a s = M.Map a (s -> Set s) -- non deterministic
+type LFA a s = M.Map a (s -> [s]  ) -- ordered non deterministic
 
 
 -- run (multiple transitions)
@@ -30,11 +30,12 @@ prodLFA = undefined
 
 --bissimilarity
 bisimilarDFA :: DFA a s -> s -> s -> Bool
-bisimilarDFA = undefined
+
 bisimilarNFA :: NFA a s -> s -> s -> Bool
-bisimilarNFA = undefined
+bisimilarNFA d = undefined
+
 bisimilarLFA :: LFA a s -> s -> s -> Bool
-bisimilarLFA = undefined
+bisimilarLFA d = undefined
 
 
 
