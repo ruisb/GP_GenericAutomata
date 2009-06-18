@@ -1,28 +1,75 @@
 module Examples where
 import qualified Data.Set as S
+import Data.Set (Set)
 import Data.Maybe (fromJust)
+import Data.Map (Map)
 import qualified Data.Map as M
 
-type DFA a s = M.Map a (s -> s    ) -- deterministic, complete
-type NFA a s = M.Map a (s -> S.Set s) -- non deterministic
-type LFA a s = M.Map a (s -> [s]  ) -- ordered non deterministic
+
+-- Deterministic Finite Automata
+-- The automata should be complete.
+-- mapping from input type 'a' to function from state to state.
+type DFA a s = Map a (s -> s) 
+-- Non deterministic Finite Automata
+-- mapping from input type 'a' to function from state to state(s).
+type NFA a s = Map a (s -> Set s) 
+
+-- mapping from input type 'a' to function from state to state(s),
+--  which are ordered and not unique.
+type LFA a s = Map a (s -> [s]) 
+
+--examples of DFA's
+
+-- dfa with chars as input, and state that are numbered.
+-- E: alphabet: {a}
+-- Q: states: {0,1}
+-- q0: beginstate: 0
+-- F: endstate: 0
+-- recognizes: even ammount of 'a's
+{-
+==> [0] (a)==> 1 (a) ==> [0]
+-}
+
+-- this one is complete
+cdfa1 :: DFA Char Int
+cdfa1 = M.insert 'a' trans M.empty
+  where
+  -- transaction function.
+  trans 0 = 1
+  trans 1 = 0
 
 
--- run (multiple transitions)
+-- testing functions.
+run_dfa1 input = runCDFA cdfa1 0 input
+run_dfa1_0 = run_dfa1 "aa"
 
-runCDFA :: (Ord a) => DFA a s -> s -> [a] -> s
+
+--- run (multiple transitions)
+-- run complete DFA
+runCDFA :: (Ord a) => DFA a s -- automata
+                   -> s       -- begin state
+                   -> [a]     -- input
+                   -> s       -- end state
 runCDFA dfa s as = case as of
   []   -> s
   a:as -> runCDFA dfa (fromJust (M.lookup a dfa) $ s) as
   -- safe use of fromJust, the automaton is complete
 
-runDFA :: (Ord a) => DFA a s -> s -> [a] -> Maybe s
+-- run DFA
+runDFA :: (Ord a) => DFA a s -- automata
+                  -> s       -- begin state
+                  -> [a]     -- input
+                  -> Maybe s -- possible end state
 runDFA dfa s as = case as of
   []   -> Just s
   a:as -> M.lookup a dfa >>= \q ->
           runDFA dfa (q s) as
 
-runNFA :: (Ord a, Ord s) => NFA a s -> s -> [a] -> S.Set s
+-- run NFA
+runNFA :: (Ord a, Ord s) => NFA a s  -- automata
+                         -> s        -- begin state
+                         -> [a]      -- input
+                         -> Set s  -- end state(s), possible empty.
 runNFA nfa s as = case as of
   []   -> S.insert s S.empty
   a:as -> case M.lookup a nfa of
@@ -30,7 +77,10 @@ runNFA nfa s as = case as of
     Just q  -> let ss = S.map (flip (runNFA nfa) $ as) (q s)
                in  S.fold S.union S.empty ss
 
-runLFA :: (Ord a) => LFA a s -> s -> [a] -> [s]
+runLFA :: (Ord a) => LFA a s -- automata
+                  -> s       -- begin state
+                  -> [a]     -- input
+                  -> [s]     -- end state(s), possible empty.
 runLFA lfa s as = case as of
   []   -> [s]
   a:as -> case M.lookup a lfa of
@@ -77,7 +127,7 @@ prod t (k:ks) = case t k of
 
 --bissimilarity
 
-(|>) :: (Ord a) => M.Map a f -> a -> f 
+(|>) :: (Ord a) => Map a f -> a -> f 
 
 aut |> a = fromJust (M.lookup a aut)
 
