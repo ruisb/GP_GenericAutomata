@@ -24,7 +24,7 @@ type LFA a s = Map a (s -> [s])
 -- E: alphabet: {a}
 -- Q: states: {0,1}
 -- q0: beginstate: 0
--- F: endstate: 0
+-- F: accepting state: {0}
 -- recognizes: even ammount of 'a's
 {-
 ==> [0] (a)==> 1 (a) ==> [0]
@@ -59,7 +59,7 @@ runCDFA dfa s as = case as of
 runDFA :: (Ord a) => DFA a s -- automata
                   -> s       -- begin state
                   -> [a]     -- input
-                  -> Maybe s -- possible end state
+                  -> Maybe s -- possible end  state
 runDFA dfa s as = case as of
   []   -> Just s
   a:as -> M.lookup a dfa >>= \q ->
@@ -69,7 +69,7 @@ runDFA dfa s as = case as of
 runNFA :: (Ord a, Ord s) => NFA a s  -- automata
                          -> s        -- begin state
                          -> [a]      -- input
-                         -> Set s  -- end state(s), possible empty.
+                         -> Set s    -- end state(s), possible empty.
 runNFA nfa s as = case as of
   []   -> S.insert s S.empty
   a:as -> case M.lookup a nfa of
