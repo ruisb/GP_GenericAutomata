@@ -48,9 +48,11 @@ module Regular.Base (
 
 ) where
 
+import Data.Set
 import Control.Monad
 
-import Generics.Regular.Rewriting.Representations
+import Regular.Representations
+
 
 
 -----------------------------------------------------------------------------
@@ -75,6 +77,13 @@ instance (Functor f, Functor g) => Functor (f :*: g) where
 
 instance Functor f => Functor (Con f) where
   fmap f (Con con r) = Con con (fmap f r)
+
+--instance (Functor f) => Functor (PSet f) where
+--  fmap f (PSet xs) = PSet (Data.Set.map (fmap f) xs)
+
+instance Functor f => Functor (f :^: a) where
+  fmap f (Exp g) = Exp (fmap f . g)
+       --equivalently: Exp (\a -> fmap f (g a))
 
 
 -----------------------------------------------------------------------------
