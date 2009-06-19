@@ -274,3 +274,6 @@ instance (GShow f, Show a) => GShow (f :^: a)
                                            . showString ") = "
                                            . gshow f x
                                            . showString "\n\n") mp)
+
+toSet :: (Crush f, Ord a) => f a -> S.Set a
+toSet fa = crush S.insert S.empty fa
