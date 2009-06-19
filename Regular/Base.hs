@@ -113,11 +113,12 @@ instance (GMap f, GMap g) => GMap (f :*: g) where
 instance GMap f => GMap (Con f) where
   fmapM f (Con c x) = liftM (Con c) (fmapM f x)
 
-instance GMap f => GMap (PSet f) where
-  fmapM f (PSet s) = liftM PSet (fmapM f s)
+-- instance GMap f => GMap (PSet f) where
+--   fmapM f (PSet s) = liftM PSet (liftM Data.Set.fromList
+--                                 (mapM (fmapM f) (Data.Set.toList s)))
 
-instance GMap f => GMap (f :^: a) where
-  fmapM f p = liftM p
+-- instance GMap f => GMap (f :^: a) where
+--   fmapM f (Exp g) = liftM Exp $ (fmapM f . g)
 
 -----------------------------------------------------------------------------
 -- Crush functions.
@@ -146,6 +147,16 @@ instance (Crush f, Crush g) => Crush (f :*: g) where
 
 instance Crush f => Crush (Con f) where
   crush op e (Con _c x) = crush op e x
+
+instance Crush f => Crush (PSet f) where
+  crush op e (PSet s) = crush' op e $ Data.Set.toList s
+    where
+      crush' op e xs = case xs of
+        []   -> e
+        x:xs -> crush' op (crush op e x) xs
+
+-- instance Crush f => Crush (f :^: a) where
+--   crush op e (Exp g) = 
 
 -- | Flatten a structure by collecting all the elements present.
 flatten :: Crush f => f a -> [a]
@@ -183,6 +194,15 @@ instance (Zip f, Zip g) => Zip (f :*: g) where
 
 instance Zip f => Zip (Con f) where
   fzipM f (Con c1 x) (Con _c2 y) = liftM (Con c1) (fzipM f x y)
+
+-- instance Zip f => Zip (PSet f) where
+--   fzipM f (PSet s1) (PSet s2) = liftM PSet (liftM Data.Set.fromList
+--                                            (mapM (\(a,b) -> fzipM f a b)
+--                                                  $ zip (Data.Set.toList s1)
+--                                                        (Data.Set.toList s2)))
+
+-- instance Zip f => Zip (f :^: a) where
+--   fzipM (Exp g1) (Exp g2) = 
 
 -- | Functorial zip with a non-monadic function, resulting in a monadic value.
 fzip  :: (Zip f, Monad m) => (a -> b -> c) -> f a -> f b -> m (f c)
@@ -229,6 +249,10 @@ instance (GShow f, GShow g) => GShow (f :*: g) where
 instance GShow f => GShow (Con f) where
   gshow f (Con c x) = showParen True (showString c . showChar ' ' . gshow f x)
 
+-- instance GShow f => GShow (PSet f) where
+--   gshow f (PSet s) = showParen True $
+--                       showString "PowerSet "
+--                     . (Data.Set.fold (.) id $ Data.Set.map (gshow f) s)
 
 -----------------------------------------------------------------------------
 -- Functions for generating values that are different on top-level.
