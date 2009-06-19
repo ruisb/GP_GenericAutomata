@@ -104,6 +104,11 @@ instance (GMap f, GMap g) => GMap (f :*: g) where
 instance GMap f => GMap (Con f) where
   fmapM f (Con c x) = liftM (Con c) (fmapM f x)
 
+instance GMap f => GMap (PSet f) where
+  fmapM f (PSet s) = liftM PSet (fmapM f s)
+
+instance GMap f => GMap (f :^: a) where
+  fmapM f p = liftM p
 
 -----------------------------------------------------------------------------
 -- Crush functions.
