@@ -36,6 +36,7 @@ module Regular.Representations (
   
 ) where
 
+import Data.Set
 
 -----------------------------------------------------------------------------
 -- Functorial structural representation types.
@@ -63,7 +64,7 @@ data Con f r    = Con String (f r)
 data PSet f r = PSet (Set (f r))
 
 -- | Structure for exponentials 
-data (f :^: a) r = a -> f r
+data (f :^: a) r = Exp (a -> f r)
 
 infixr 6 :+:
 infixr 7 :*:
