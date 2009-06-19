@@ -24,6 +24,8 @@ module Regular.Representations (
   (:+:) (..),
   (:*:) (..),
   Con (..),
+  PSet (..),
+  (:^:) (..),
 
   -- * Fixed-point type.
   Fix (..),
@@ -57,8 +59,15 @@ data (f :*: g) r = f r :*: g r
 -- | Structure type to store the name of a constructor.
 data Con f r    = Con String (f r)
 
+-- | Structure for powerset
+data PSet f r = PSet (Set (f r))
+
+-- | Structure for exponentials 
+data (f :^: a) r = a -> f r
+
 infixr 6 :+:
 infixr 7 :*:
+infix  8 :^:
 
 -----------------------------------------------------------------------------
 -- Fixed-point type.
