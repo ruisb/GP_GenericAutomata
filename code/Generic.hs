@@ -3,6 +3,8 @@
 {-#LANGUAGE FlexibleInstances#-}
 module Generic where
 
+import Debug.Trace
+
 import Regular2.Representations
 import Regular2.Base
 
@@ -12,7 +14,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Control.Monad
 import Control.Arrow
-import Control.Monad.State
+import Control.Monad.Reader
 import Data.Maybe
 
 
@@ -143,21 +145,67 @@ lfa1 = M.fromList [ ('a', funcFromList [ (1,[2,1])
                                        , (3,[])])
                   ]
 
+
+lfa2 :: LTS Char [] Int
+
+lfa2 = M.fromList [ ('a', funcFromList [ (1,[2,4])
+                                       , (3,[2,4])
+                                       , (2,[])
+                                       , (4,[])
+                                       ])
+                  , ('b', funcFromList [ (1,[2,4])
+                                       , (3,[2,4])
+                                       , (2,[])
+                                       , (4,[])
+                                       ])
+                  ]
+
+lfa3 = M.fromList [ ('a', funcFromList [ (1,[4,2])
+                                       , (3,[2,4])
+                                       , (2,[])
+                                       , (4,[])
+                                       ])
+                  , ('b', funcFromList [ (1,[2,4])
+                                       , (3,[2,4])
+                                       , (2,[1])
+                                       , (4,[])
+                                       ])
+                  ]
+
 -- there are problems in encoding representations.
 --let us try lists
 
 
---i:bisim :: LTS a f s -> (s,s) -> Bool
---bisim delta (p,q) = evalState (bisim' delta (p,q)) [ []]
+bisimilar :: (Show s, Eq s, Ord a) => LTS a [] s -> s -> s -> Bool
+bisimilar delta p q = runReader (bisim delta p q) [ ]
 
 --horrible code! 
 -- not yet correct..
----bisim' :: LTS a f s -> s -> s -> State [(s,s)] Bool
----bisim' delta (p,q) = do b <- gets (lookup (p,q))
----                        if isJust
----                         then return True
----                         else M.foldM (&&) False M.map (\a -> zipWithM (bisim' delta) (delta \$ a p) (delta \$ a q)) 
----
+alphabet = M.keys
+bisim :: (Show s, Eq s, Ord a) => LTS a [] s -> s -> s -> Reader [(s,s)] Bool
+bisim delta p q = do cycle <- asks (elem (p,q))
+                     if p==q || cycle 
+                       then return True
+                       else liftM and $ mapM (bisimBy delta p q) (alphabet delta)
+
+bisimBy :: (Show s, Eq s, Ord a) => LTS a [] s -> s -> s -> a -> Reader [(s,s)] Bool
+bisimBy delta p q a = let p' = (delta \$ a) p
+                          q' = (delta \$ a) q
+                      in local ((p,q):) $
+                          liftM (maybe False and)  $ zipWithM' (bisim delta) p' q' 
+
+
+zipWithM' :: (Monad m) => (a -> b -> m c) -> [a] -> [b] -> m (Maybe [c])
+zipWithM' f [] [] = return $ Just []
+zipWithM' f (a:as) (b:bs) = do xs <- zipWithM' f as bs 
+                               case xs of Nothing-> return Nothing
+                                          Just ys -> do 
+                                                        r <- f a b
+                                                        return $ Just(r : ys)
+                                                        --liftM (maybe Nothing ( undefined :)) (zipWithM' f as bs)
+zipWithM' f _ _ = return Nothing
+
+
 
 
 type FList a = Unit :+: K a :*: Id
