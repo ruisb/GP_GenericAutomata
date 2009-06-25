@@ -27,9 +27,6 @@ module Regular2.Representations (
   Con (..),
   PSet (..),
   (:^:) (..),
-  list2l,l2list,
-  List,
-  G,
   
   -- * Fixed-point type.
   Fix (..),
@@ -46,17 +43,6 @@ import Data.Map
 -----------------------------------------------------------------------------
 -- Functorial structural representation types.
 -----------------------------------------------------------------------------
-
-type G a = Unit :+: K a :*: Id
-type List a = Fix (G a)
-
-l2list :: [a] -> List a
-l2list [] =In $ L Unit
-l2list (x:xs) = In $ R (K x :*: Id (l2list xs))
-
-list2l :: List a -> [a]
-list2l (In (L Unit)) = []
-list2l (In (R (K x :*: Id s))) = x : list2l s
 
 -- | Structure type for constant values.
 data K a r      = K a
