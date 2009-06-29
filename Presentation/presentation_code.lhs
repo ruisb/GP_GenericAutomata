@@ -172,9 +172,7 @@ runPreserving delta (a:as)  = {-"\alert{"-}Step{-"}"-} . fmap (runPreserving del
 \begin{code}
 runInMonad :: (..., Functor f, Monad f) => LTS a f s -> [a] -> s -> f s
 runInMonad delta []      = {-"\alert{"-}return{-"}"-}
-runInMonad delta (a:as)  = runInMonad delta as <=< (delta \$ a)
-{-"\hspace{4cm}or"-}
-runInMonad delta (a:as)  = {-"\alert{"-}join{-"}"-} . runInMonad delta as . (delta \$ a)
+runInMonad delta (a:as)  = {-"\alert{"-}join{-"}"-} . fmap (runInMonad delta as) . (delta \$ a)
 \end{code}
 \end{minipage}
 }
@@ -207,6 +205,48 @@ fSafeZipWithM :: (a -> b -> m c) -> f a -> f b -> m (Maybe (f c))
 \end{code}
 }
 
+
+\newpage
+\begin{center}
+$T \iso F\; T$\\
+$T = \mu T$
+
+~\\
+
+
+$T\; A \iso B \;A\; (T A)$\\
+$T\; A = \mu (B A)$
+
+~\\~\\~\\
+
+\begin{code}
+class BiFunctor (f :: * -> * -> *) where
+  bifmap :: (a -> b) -> (c -> d) -> f a c -> f b d
+\end{code}
+
+\end{center}
+
+~\\
+
+
+\begin{code}
+data Unit a r       = Unit
+data (f :+: g) a r  = L (f a r) | R (g a r)
+data (f :*: g) a r  = f a r :*: g a r
+data Id a r   =  Id {-"\alert{"-}r {-"}"-} 
+data P  a r   =  P {-"\alert{"-}a {-"}"-} 
+
+{-"~\\"-}
+
+class BiFunctor (PBF t) => BiRegular t where
+  type PBF t :: * -> * -> *
+  from :: t a -> PBF t a (t a)
+  to   :: PBF t a (t a) -> t a
+
+{-"~\\"-}
+
+PBT List = 1 :+: P :*: Id 
+\end{code}
 
 \end{document}
 

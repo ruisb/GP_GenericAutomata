@@ -183,8 +183,8 @@ bisimilar delta p q = runReader (bisim delta p q) [ ]
 -- not yet correct..
 alphabet = M.keys
 bisim :: (Show s, Eq s, Ord a) => LTS a [] s -> s -> s -> Reader [(s,s)] Bool
-bisim delta p q = do cycle <- asks (elem (p,q))
-                     if p==q || cycle 
+bisim delta p q = do stack <- ask 
+                     if p==q || (p,q) `elem` stack || (q,p) `elem` stack 
                        then return True
                        else liftM and $ mapM (bisimBy delta p q) (alphabet delta)
 

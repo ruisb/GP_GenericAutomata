@@ -1,0 +1,27 @@
+---stuff and conclusions abaout tree
+besides type checkig.
+checking type refinement, inclusion,...
+
+what we plan to implement:
+union, intersection, complement
+
+membership, emptiness, finitness of accepted language, inclusion
+
+
+The big win to thinking in algebraic terms is that we can 
+easily change the carrier from “states” to any other set. For 
+example, take Q to be a ﬁnite subset of T( 
+F , X ), and the 
+unique homomorphism on the algebra deﬁnes substitution 
+for us. 
+
+
+
+----conclusions F
+the Set ORd problem
+
+
+---conclusions to both
+maybe we want to try other libraries
+nice that we could use a lot generic abstractions that are released in generic libraries (map, fold, etc)
+
