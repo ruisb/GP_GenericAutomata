@@ -91,7 +91,7 @@
 \title{
           Generic Automata               
 %\\
-:wq%                Generic Programming
+                Generic Programming 2008/2009 \\ Universiteit Utrecht
 }
 
 \author{
@@ -125,9 +125,10 @@ what are the aims : also see gp in action and check how good the libraries are n
 
 \section{Abstracting the Shape: F-(Coalgebraic) Automata}
 
+THIS IS: abstract from the shape of the transition
+
 \subsection{Classical Automata}
 
-THIS IS: abstract from the shape of the transition
 
 some classical automata
 
@@ -155,10 +156,32 @@ it might be useful considering this general setting besides the common cases.
 
 \section{Abstracting the Language: Tree Automata}
 
+The second generalization we consider has to do with the kind of input that drives an automaton.
+In t, . Also, .
+string languages ---> tree languages
+
+there is also a theory about regular languages: indicate some references,
+
 \subsection{EXAMPLE}
+To motivate this section, we will present an concrete example of a automata that recognizes a certain tree language.
+Let us consider a language of integer and boolean expressions.
+... informal explanation
+... table of symbols, and their arities 
+
+In \Haskell, a \emph{word} of this language would be an inhabitant of the following datatype
+\begin{code}
+data Expr  =  And Expr Expr
+           |  Not Expr
+           |  Eq  Expr Expr
+           |  IfThenElse Expr Expr Expr
+           | ...
+
+Plus, And, Not, ifte false true suc 0 eq
+\end{code}
+
 example of tree automata for expressions bla bla
 
-\subsection{Tree automata}
+\subsection{Tree automata (definitions and stuff)}
 
 \subsection{Coalgebras, again!}
 
@@ -170,8 +193,15 @@ example of tree automata for expressions bla bla
 
 \section{Conclusions}
 \subsection{About Generic Programming}
-\subsection{}
+(an experience report on the use of gp techniques and gp libraries
 
+\subsection{..}
+
+
+\subsection{Future Work}
+
+
+also accceptance conditions, and infitnite stuff!
 
 \end{document}
 
