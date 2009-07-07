@@ -1,0 +1,3 @@
+Regular                     | original files from the library Rewriting
+Regular/Representations.hs  | representation types
+Regular/Base.hs             | instances for some functions
